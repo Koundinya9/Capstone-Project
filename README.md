@@ -129,27 +129,3 @@ The application features a streamlined 4-tab interface designed for comprehensiv
   Export chat history and key findings for presentations or documentation.
 
 ---
-### Navigating the App
-
-The application is structured into four main tabs, each designed for a specific part of the content creation workflow:
-
-* **📝 Brand Strategy:**  
-  A step-by-step process to define your professional brand.  
-  You’ll answer questions about your background, career goals, and desired positioning.  
-  The AI then generates a detailed, multi-week content strategy tailored to your needs — the starting point for building a long-term plan.
-
-* **💡 Post Ideas:**  
-  Your primary content creation hub. Once a strategy is approved, it populates with post ideas organized by theme.  
-  You can refine existing ideas, generate more ideas for specific themes, or use the **Refine Selected Ideas** buttons to apply feedback across multiple themes.
-
-* **✨ Quick Ideas:**  
-  An on-demand, no-strategy-required workflow. You can generate single-post ideas or a 3-part series on any topic you choose.  
-  This tab also allows you to save your favorite ideas to a history for later use.
-
-* **✍️ Final Post:**  
-  Your final workspace. Select any idea from the other tabs to have the AI write a full, polished draft. Here, you can:
-  - Review a **Post Preview** styled like a real social media post.  
-  - Get automated feedback from the **Quality Assurance Agent**.  
-  - Provide your own feedback and refine the draft using the **Refine Draft** button.  
-  - Save or download your final version.  
-
