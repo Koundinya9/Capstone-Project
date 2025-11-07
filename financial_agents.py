@@ -10,11 +10,7 @@ gemini_llm = LLM(
     model="gemini/gemini-2.5-flash-lite"
 )
 
-groq_llm = LLM(
-    api_key=os.getenv("GROQ_API_KEY"),
-    model="groq/llama-3.1-8b-instant"
-)
-
+# All agents will use Gemini LLM
 class FinancialAgents:
     
     def financial_document_analyzer_agent(self):
@@ -54,7 +50,7 @@ class FinancialAgents:
                 "You excel at calculating liquidity ratios, profitability ratios, efficiency ratios, "
                 "and leverage ratios, and can interpret what these metrics mean for investors and stakeholders."
             ),
-            llm=groq_llm,
+            llm=gemini_llm,
             verbose=False,
             allow_delegation=False
         )
@@ -82,7 +78,7 @@ class FinancialAgents:
                 "in financial data. You can spot growth trajectories, cyclical patterns, seasonal effects, "
                 "and potential red flags in financial performance."
             ),
-            llm=groq_llm,
+            llm=gemini_llm,
             verbose=False,
             allow_delegation=False
         )
@@ -96,7 +92,7 @@ class FinancialAgents:
                 "of risks including credit risk, market risk, operational risk, and strategic risk. "
                 "You provide clear risk ratings and mitigation strategies."
             ),
-            llm=groq_llm,
+            llm=gemini_llm,
             verbose=False,
             allow_delegation=False
         )
@@ -110,7 +106,69 @@ class FinancialAgents:
                 "against their industry peers and market indices. You can identify relative "
                 "strengths, weaknesses, and competitive positioning."
             ),
-            llm=groq_llm,
+            llm=gemini_llm,
+            verbose=False,
+            allow_delegation=False
+        )
+
+    def competitor_identification_agent(self):
+        return Agent(
+            role='Competitive Intelligence Specialist',
+            goal="Identify and analyze the top competitors of a given company in their industry.",
+            backstory=(
+                "You are a competitive intelligence expert who specializes in identifying "
+                "key competitors and understanding competitive landscapes. You can quickly "
+                "identify the top 3-5 direct competitors of any company based on industry, "
+                "market share, product overlap, and strategic positioning."
+            ),
+            llm=gemini_llm,
+            verbose=False,
+            allow_delegation=False
+        )
+
+    def competitive_intelligence_agent(self):
+        return Agent(
+            role='Competitive Analysis Specialist',
+            goal="Provide deep competitive intelligence including recent moves, market position, threats, and financial comparisons.",
+            backstory=(
+                "You are a strategic analyst specializing in competitive intelligence. "
+                "You excel at analyzing competitor strategies, recent business moves, market positioning, "
+                "and potential competitive threats. You provide comprehensive financial comparisons "
+                "and actionable competitive insights that help companies understand their competitive landscape."
+            ),
+            llm=gemini_llm,
+            verbose=False,
+            allow_delegation=False
+        )
+
+    def knowledge_graph_analyst_agent(self):
+        return Agent(
+            role='Knowledge Graph Analyst',
+            goal="Extract and structure entities and relationships from competitive analysis.",
+            backstory=(
+                "You are a data scientist specializing in structured data extraction and relationship analysis. "
+                "Your task is to quickly identify and extract key entities (companies, products, markets, people) "
+                "and their relationships from competitive analysis. You focus on clear, structured output that "
+                "can be easily parsed into a knowledge graph."
+            ),
+            llm=gemini_llm,
+            verbose=False,
+            allow_delegation=False
+        )
+
+    def strategy_synthesis_agent(self):
+        return Agent(
+            role='Chief Strategy Officer',
+            goal="Synthesize insights from multiple expert analysts to provide comprehensive, well-rounded strategic advice.",
+            backstory=(
+                "You are a seasoned Chief Strategy Officer with decades of experience in synthesizing "
+                "complex business insights. Your expertise lies in understanding and combining different "
+                "analytical perspectives - from competitive intelligence and market analysis to risk "
+                "assessment and relationship mapping. You excel at distilling multiple expert opinions "
+                "into clear, actionable insights. Your role is to consider all angles presented by "
+                "your team of experts and deliver a comprehensive yet concise strategic perspective."
+            ),
+            llm=gemini_llm,
             verbose=False,
             allow_delegation=False
         )

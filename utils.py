@@ -3,14 +3,17 @@ from pypdf import PdfReader
 import io
 import re
 import pandas as pd
+from knowledge_graph import CompetitiveKnowledgeGraph
 
 class CentralMemory:
     def __init__(self):
         self.memory = {
             "internal_analysis": {},
             "market_analysis": {},
+            "competitive_intelligence": {},
             "current_focus": None
         }
+        self.knowledge_graph = CompetitiveKnowledgeGraph()
 
     def set_focus(self, focus):
         self.memory["current_focus"] = focus
@@ -30,11 +33,49 @@ class CentralMemory:
     def get_market_analysis(self):
         return self.memory["market_analysis"]
 
+    def update_competitive_intelligence(self, data):
+        self.memory["competitive_intelligence"].update(data)
+
+    def get_competitive_intelligence(self):
+        return self.memory["competitive_intelligence"]
+    
+    def get_knowledge_graph(self):
+        """Get the knowledge graph instance."""
+        return self.knowledge_graph
+    
+    def get_graph_context_for_query(self, query: str = "") -> str:
+        """Generate context from knowledge graph for answering queries."""
+        graph = self.knowledge_graph
+        
+        # Get graph summary
+        context = graph.get_graph_summary() + "\n\n"
+        
+        # Get competitive intelligence data
+        comp_intel = self.get_competitive_intelligence()
+        user_company = comp_intel.get('user_company', '')
+        
+        if user_company:
+            context += f"\n**User Company: {user_company}**\n"
+            
+            # Get user company network
+            network = graph.get_company_network(user_company)
+            if network['competitors']:
+                context += f"\nCompetitors: {', '.join(network['competitors'])}\n"
+            if network['markets']:
+                context += f"Markets: {', '.join(network['markets'])}\n"
+            if network['products']:
+                context += f"Products: {', '.join(network['products'])}\n"
+        
+        return context
+
     def get_chat_context(self):
         focus = self.get_focus()
         if focus == "internal_analysis":
             return self.get_internal_analysis().get("document_content", "")
         elif focus == "market_analysis":
+            comp_intel = self.get_competitive_intelligence()
+            if comp_intel.get("selected_competitor_analysis"):
+                return comp_intel.get("selected_competitor_analysis", "")
             return self.get_market_analysis().get("company_analysis", "")
         return ""
 

@@ -187,20 +187,36 @@ class FinancialTasks:
 
     def financial_chat_response_task(self, agent, user_question, context=""):
         return Task(
-            description=f"""Answer the user's financial analysis question based on the provided context.
-            
-            User Question: {user_question}
-            
-            Provide a helpful, accurate, and well-structured response that:
-            1. Directly addresses the user's question
-            2. Uses the provided context/analysis when relevant
-            3. Explains financial concepts in clear, understandable terms
-            4. Provides actionable insights when appropriate
-            5. Suggests follow-up questions or analysis if helpful
-            
-            Context (if available):
-            {context}""",
-            expected_output="A helpful and informative response to the user's financial question.",
+            description=f"""Answer this question directly:
+
+{user_question}
+
+Context:
+{context}
+
+Response Rules:
+1. State facts directly without phrases like:
+   - "Based on the analysis..."
+   - "According to the knowledge graph..."
+   - "The data shows..."
+   - "I can see that..."
+   
+2. Never mention:
+   - The analysis process
+   - Data sources
+   - The knowledge graph
+   - How you got the information
+   
+3. Instead of:
+   "According to the knowledge graph, Apple and Microsoft compete in the software market"
+   Say:
+   "Apple and Microsoft compete in the software market"
+
+4. If information is missing, simply state:
+   "This information is not available" or "This data is not found"
+
+Always write in present tense, declarative statements.""",
+            expected_output="Direct factual statements without meta-references.",
             agent=agent
         )
 
@@ -218,5 +234,197 @@ class FinancialTasks:
             INPUT:
             {company_or_document}""",
             expected_output="A concise financial summary with key insights and quick assessment.",
+            agent=agent
+        )
+
+    def identify_competitors_task(self, agent, company_name):
+        return Task(
+            description=f"""Identify the top 3 direct competitors of {company_name}.
+            
+            Research and identify the 3 biggest direct competitors based on:
+            1. Industry overlap and market segment
+            2. Product/service similarity
+            3. Market share and competitive positioning
+            4. Geographic presence
+            5. Revenue scale and company size
+            
+            For each competitor, provide:
+            - Company name
+            - Brief description (1-2 sentences)
+            - Why they are a direct competitor
+            - Approximate market position/size
+            
+            IMPORTANT: Return the results in a structured format with clear competitor names 
+            that can be easily parsed. Use this exact format:
+            
+            **Competitor 1: [Company Name]**
+            Description: [Brief description]
+            Competitive Overlap: [Why they compete]
+            Market Position: [Position/size]
+            
+            **Competitor 2: [Company Name]**
+            ...
+            
+            **Competitor 3: [Company Name]**
+            ...
+            
+            Company to analyze: {company_name}""",
+            expected_output="A list of the top 3 direct competitors with structured information about each.",
+            agent=agent
+        )
+
+    def competitive_intelligence_task(self, agent, user_company, competitor_company):
+        return Task(
+            description=f"""Provide comprehensive competitive intelligence analysis comparing {competitor_company} against {user_company}.
+            
+            Deliver a detailed competitive analysis including:
+            
+            1. **Company Overview**
+               - Brief background of {competitor_company}
+               - Business model and key products/services
+               - Market position and scale
+            
+            2. **Recent Strategic Moves** (Past 6-12 months)
+               - Major product launches or updates
+               - Acquisitions or partnerships
+               - Market expansion initiatives
+               - Strategic pivots or changes
+               - Recent funding or investment rounds
+            
+            3. **Market Position & Competitive Strategy**
+               - Current market share (if available)
+               - Competitive advantages and differentiators
+               - Target market and customer segments
+               - Pricing strategy
+               - Distribution channels
+            
+            4. **Threats to {user_company}**
+               - Direct competitive threats
+               - Areas where they outperform {user_company}
+               - Emerging capabilities that could disrupt
+               - Customer segments they're winning
+               - Strategic initiatives that pose risks
+            
+            5. **Financial Comparison**
+               - Revenue comparison (if available)
+               - Profitability metrics
+               - Growth rates
+               - Valuation (for public companies)
+               - Financial health indicators
+               - Investment in R&D/Innovation
+            
+            6. **Strengths vs Weaknesses**
+               - Key competitive strengths of {competitor_company}
+               - Notable weaknesses or vulnerabilities
+               - Areas where {user_company} has advantages
+            
+            7. **Strategic Recommendations**
+               - How {user_company} should respond
+               - Opportunities to exploit competitor weaknesses
+               - Defensive strategies needed
+               - Areas requiring urgent attention
+            
+            User's Company: {user_company}
+            Competitor Being Analyzed: {competitor_company}""",
+            expected_output="A comprehensive competitive intelligence report with actionable insights and strategic recommendations.",
+            agent=agent
+        )
+
+    def knowledge_graph_query_task(self, agent, query, graph_context):
+        return Task(
+            description=f"""Given this competitive intelligence query:
+
+            {query}
+
+            And this competitive data:
+            {graph_context}
+
+            Your task:
+            1. Analyze the data directly related to the query
+            2. Extract only the most relevant facts and relationships
+            3. Provide a clear, factual answer
+            4. Use simple, declarative statements
+            5. Focus specifically on answering the query asked
+            
+            Format: Provide your response as direct statements without any meta-commentary or analysis framing.""",
+            expected_output="Direct factual answer to the query without any meta-analysis.",
+            agent=agent
+        )
+
+    def strategy_synthesis_task(self, agent, query, expert_responses):
+        return Task(
+            description=f"""You are a Chief Strategy Officer answering this question:
+
+            {query}
+
+            You have these expert inputs:
+            {expert_responses}
+
+            Provide a direct answer that:
+            1. Directly addresses the user's question
+            2. Synthesizes the most relevant expert insights
+            3. Uses concrete, factual statements
+            4. Stays focused on the specific question asked
+            5. Avoids meta-commentary about analysis or synthesis
+            
+            Important: Do not mention the experts or the analysis process. Simply provide the answer as if you are directly responding to the question based on your knowledge.""",
+            expected_output="Direct answer incorporating expert insights without meta-commentary.",
+            agent=agent
+        )
+
+    def entity_extraction_task(self, agent, analysis_text, user_company, competitor_company):
+        return Task(
+            description=f"""Extract structured entities and relationships from the competitive intelligence analysis.
+            
+            Extract and structure:
+            
+            **Companies:**
+            - Identify all mentioned companies
+            - Note their attributes (size, revenue, market position, etc.)
+            
+            **Products/Services:**
+            - List products mentioned for {user_company}
+            - List products mentioned for {competitor_company}
+            - Note product categories and market segments
+            
+            **Markets/Industries:**
+            - Identify all markets and industry segments mentioned
+            - Note market size, growth, and characteristics
+            
+            **Key People:**
+            - Extract names of executives, founders, key personnel
+            - Note their roles and companies
+            
+            **Relationships:**
+            - Competitive relationships (who competes with whom)
+            - Market relationships (which companies operate in which markets)
+            - Product relationships (which company produces which products)
+            - Partnership relationships (collaborations, acquisitions)
+            
+            **Strategic Events:**
+            - Recent moves, launches, acquisitions
+            - Market entries or exits
+            - Strategic partnerships
+            
+            Format your response as structured data that can be easily parsed:
+            
+            COMPANIES:
+            - [Company Name]: [attributes]
+            
+            PRODUCTS:
+            - [Product Name]: company=[Company], category=[Category]
+            
+            MARKETS:
+            - [Market Name]: [attributes]
+            
+            PEOPLE:
+            - [Person Name]: company=[Company], role=[Role]
+            
+            RELATIONSHIPS:
+            - [Entity1] -> [Relationship Type] -> [Entity2]: [description]
+            
+            Analysis Text:
+            {analysis_text}""",
+            expected_output="Structured extraction of entities and relationships in a parseable format.",
             agent=agent
         )
