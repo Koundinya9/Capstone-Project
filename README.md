@@ -65,7 +65,7 @@ Follow these instructions to get the project running on your local machine.
     source .venv/bin/activate
 
     # Activate on Windows
-    # .\\.venv\\Scripts\\activate
+    .\\.venv\\Scripts\\activate
     ```
 
 3.  **Install the required packages:**
