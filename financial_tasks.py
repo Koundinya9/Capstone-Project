@@ -186,39 +186,23 @@ class FinancialTasks:
         )
 
     def financial_chat_response_task(self, agent, user_question, context=""):
-        return Task(
-            description=f"""Answer this question directly:
+          return Task(
+                description=f"""Answer the user's question briefly and directly.
 
-{user_question}
+Question: {user_question}
+Context: {context}
 
-Context:
-{context}
+Rules for response (strict):
+1. Provide a one-line top summary (1 sentence) followed by up to 3 short bullets if needed.
+2. Do NOT use phrases like: "according to", "based on", "the data shows", or any meta-commentary about sources or process.
+3. Use present-tense, declarative statements. Keep each bullet under ~18 words.
+4. If the answer requires numbers or metrics, present only the most essential figures (no long tables).
+5. If information is not available locally, run online checks and then answer; if still missing, reply: "Information not available."
 
-Response Rules:
-1. State facts directly without phrases like:
-   - "Based on the analysis..."
-   - "According to the knowledge graph..."
-   - "The data shows..."
-   - "I can see that..."
-   
-2. Never mention:
-   - The analysis process
-   - Data sources
-   - The knowledge graph
-   - How you got the information
-   
-3. Instead of:
-   "According to the knowledge graph, Apple and Microsoft compete in the software market"
-   Say:
-   "Apple and Microsoft compete in the software market"
-
-4. If information is missing, simply state:
-   "This information is not available" or "This data is not found"
-
-Always write in present tense, declarative statements.""",
-            expected_output="Direct factual statements without meta-references.",
-            agent=agent
-        )
+Format: 1-line summary + up to 3 bullets. Total answer should be short — suitable for a CEO to read in 10 seconds.""",
+                expected_output="Very short, direct answer (1 line + up to 3 bullets).",
+                agent=agent
+          )
 
     def quick_financial_summary_task(self, agent, company_or_document):
         return Task(
@@ -274,61 +258,43 @@ Always write in present tense, declarative statements.""",
         )
 
     def competitive_intelligence_task(self, agent, user_company, competitor_company):
-        return Task(
-            description=f"""Provide comprehensive competitive intelligence analysis comparing {competitor_company} against {user_company}.
-            
-            Deliver a detailed competitive analysis including:
-            
-            1. **Company Overview**
-               - Brief background of {competitor_company}
-               - Business model and key products/services
-               - Market position and scale
-            
-            2. **Recent Strategic Moves** (Past 6-12 months)
-               - Major product launches or updates
-               - Acquisitions or partnerships
-               - Market expansion initiatives
-               - Strategic pivots or changes
-               - Recent funding or investment rounds
-            
-            3. **Market Position & Competitive Strategy**
-               - Current market share (if available)
-               - Competitive advantages and differentiators
-               - Target market and customer segments
-               - Pricing strategy
-               - Distribution channels
-            
-            4. **Threats to {user_company}**
-               - Direct competitive threats
-               - Areas where they outperform {user_company}
-               - Emerging capabilities that could disrupt
-               - Customer segments they're winning
-               - Strategic initiatives that pose risks
-            
-            5. **Financial Comparison**
-               - Revenue comparison (if available)
-               - Profitability metrics
-               - Growth rates
-               - Valuation (for public companies)
-               - Financial health indicators
-               - Investment in R&D/Innovation
-            
-            6. **Strengths vs Weaknesses**
-               - Key competitive strengths of {competitor_company}
-               - Notable weaknesses or vulnerabilities
-               - Areas where {user_company} has advantages
-            
-            7. **Strategic Recommendations**
-               - How {user_company} should respond
-               - Opportunities to exploit competitor weaknesses
-               - Defensive strategies needed
-               - Areas requiring urgent attention
-            
-            User's Company: {user_company}
-            Competitor Being Analyzed: {competitor_company}""",
-            expected_output="A comprehensive competitive intelligence report with actionable insights and strategic recommendations.",
-            agent=agent
-        )
+          # Produce a concise, executive-ready competitor analysis focused on recent moves, markets, hero products,
+          # financial snapshot, and explicit threats to the user's company. The output MUST be short, to-the-point,
+          # and formatted as Markdown headings so the UI can render sections clearly.
+          return Task(
+                description=f"""Produce a concise, executive-ready competitor analysis for {competitor_company} vs {user_company}.
+
+Output format (Markdown headings). Keep it extremely concise — executives only want the essentials.
+
+TopLine: One-line summary (1 sentence)
+
+## Recent Moves (last 6 weeks)
+- List up to 6 bullet points describing newsworthy events or actions in the last ~6 weeks only. Prioritize: product launches, partnerships, acquisitions, funding, market entries, major hires.
+
+## Major Markets
+- List the primary markets / geographies / industry segments the competitor actively competes in (3-6 items).
+
+## Hero Products & Focus
+- List the 3 hero products or offerings the competitor is actively promoting; for each, 1 short phrase describing the focus (e.g., "AI analytics — enterprise")
+
+## Financial Snapshot (key figures)
+- Provide up to 5 concise metrics (Revenue, YoY growth, Margin, Cash/Debt, Recent quarter highlights). If exact figures unavailable, say: "Not available" for that metric.
+
+## Direct Threats to {user_company}
+- List up to 6 specific moves or capabilities that pose an immediate threat to {user_company} (each 1 short bullet). Be concrete.
+
+Notes for the agent:
+1. Use the knowledge graph and any stored analysis first, but ALWAYS perform online checks (news + filings) to fill gaps.
+2. For "Recent Moves" restrict to roughly the last 6 weeks — do not include older activity.
+3. When citing financials, consult official filings (10-K, 10-Q, earnings releases) if available; otherwise use public estimates.
+4. Do NOT include meta-commentary ("according to X"), process notes, or long explanations. Output must be declarative, present-tense statements.
+
+
+User's Company: {user_company}
+Competitor: {competitor_company}""",
+                expected_output="Markdown with the required headings and concise bullets.",
+                agent=agent
+          )
 
     def knowledge_graph_query_task(self, agent, query, graph_context):
         return Task(
@@ -374,86 +340,52 @@ Always write in present tense, declarative statements.""",
 
     def online_research_task(self, agent, query, company_name="", context=""):
         return Task(
-            description=f"""Research the following query online:
+                description=f"""Research the query online and provide concise, up-to-date findings.
 
-{query}
-
+Query: {query}
 Company Context: {company_name}
 Additional Context: {context}
 
 Instructions:
-1. Focus on finding current, factual information from reliable sources
-2. If researching a company, prioritize:
-   - Recent news and developments
-   - Market position and competitive landscape
-   - Financial performance and metrics
-   - Products and services
-   - Strategic initiatives
+1. Prioritize news and developments from the LAST 6 WEEKS. If none, explicitly say: "No recent public news (last 6 weeks)".
+2. Focus on short, factual bullets. Output must be concise — executives only.
+3. If researching a company, return sections (Markdown headings):
+    - Recent News (last 6 weeks): up to 6 bullets
+    - Immediate Market Impact: 1-3 bullets
+    - Quick Financial Signals (if available): 1-3 bullets or "Not available"
+4. Do NOT include source citations or meta-commentary. Use present-tense declarative bullets.
 
-3. Present information in these categories:
-   - Key Facts: Direct, verifiable information
-   - Market Context: Industry trends and market position
-   - Competitive Insights: Relative position and competitive dynamics
-   - Recent Developments: Latest news and changes (within last 6 months)
-
-Format your response as direct statements without referencing sources or analysis process.""",
-            expected_output="Current, factual information presented directly without meta-commentary.",
-            agent=agent
-        )
+Format: Markdown headings and short bullets. Keep total output under ~150 words where possible.""",
+                expected_output="Concise, news-focused markdown summary (last 6 weeks prioritized).",
+                agent=agent
+          )
 
     def entity_extraction_task(self, agent, analysis_text, user_company, competitor_company):
         return Task(
             description=f"""Extract structured entities and relationships from the competitive intelligence analysis.
-            
-            Extract and structure:
-            
-            **Companies:**
-            - Identify all mentioned companies
-            - Note their attributes (size, revenue, market position, etc.)
-            
-            **Products/Services:**
-            - List products mentioned for {user_company}
-            - List products mentioned for {competitor_company}
-            - Note product categories and market segments
-            
-            **Markets/Industries:**
-            - Identify all markets and industry segments mentioned
-            - Note market size, growth, and characteristics
-            
-            **Key People:**
-            - Extract names of executives, founders, key personnel
-            - Note their roles and companies
-            
-            **Relationships:**
-            - Competitive relationships (who competes with whom)
-            - Market relationships (which companies operate in which markets)
-            - Product relationships (which company produces which products)
-            - Partnership relationships (collaborations, acquisitions)
-            
-            **Strategic Events:**
-            - Recent moves, launches, acquisitions
-            - Market entries or exits
-            - Strategic partnerships
-            
-            Format your response as structured data that can be easily parsed:
-            
-            COMPANIES:
-            - [Company Name]: [attributes]
-            
-            PRODUCTS:
-            - [Product Name]: company=[Company], category=[Category]
-            
-            MARKETS:
-            - [Market Name]: [attributes]
-            
-            PEOPLE:
-            - [Person Name]: company=[Company], role=[Role]
-            
-            RELATIONSHIPS:
-            - [Entity1] -> [Relationship Type] -> [Entity2]: [description]
-            
-            Analysis Text:
-            {analysis_text}""",
+
+Extract and structure:
+
+COMPANIES:
+- Identify all mentioned companies and provide short attributes (size, public/private, HQ country).
+
+PRODUCTS:
+- List products/services mentioned for {user_company} and {competitor_company} (product name: brief category).
+
+MARKETS:
+- Identify market segments and geographies mentioned (short list).
+
+PEOPLE:
+- Extract named executives and their roles, if mentioned (Name: Role, Company).
+
+RELATIONSHIPS:
+- Provide concise relationship lines (e.g., "CompanyA -> competes_with -> CompanyB: direct cloud offering overlap").
+
+STRATEGIC_EVENTS:
+- List recent strategic events referenced in the analysis (launches, acquisitions, partnerships) as short bullets.
+
+Format the response so it is machine-parseable: use section headings in ALL CAPS (COMPANIES, PRODUCTS, MARKETS, PEOPLE, RELATIONSHIPS, STRATEGIC_EVENTS) with short bullets under each.
+""",
             expected_output="Structured extraction of entities and relationships in a parseable format.",
             agent=agent
         )
