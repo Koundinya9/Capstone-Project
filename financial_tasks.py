@@ -224,77 +224,60 @@ Format: 1-line summary + up to 3 bullets. Total answer should be short — suita
     def identify_competitors_task(self, agent, company_name):
         return Task(
             description=f"""Identify the top 3 direct competitors of {company_name}.
-            
+
             Research and identify the 3 biggest direct competitors based on:
             1. Industry overlap and market segment
             2. Product/service similarity
             3. Market share and competitive positioning
             4. Geographic presence
             5. Revenue scale and company size
-            
-            For each competitor, provide:
-            - Company name
-            - Brief description (1-2 sentences)
-            - Why they are a direct competitor
-            - Approximate market position/size
-            
-            IMPORTANT: Return the results in a structured format with clear competitor names 
-            that can be easily parsed. Use this exact format:
-            
-            **Competitor 1: [Company Name]**
-            Description: [Brief description]
-            Competitive Overlap: [Why they compete]
-            Market Position: [Position/size]
-            
-            **Competitor 2: [Company Name]**
-            ...
-            
-            **Competitor 3: [Company Name]**
-            ...
-            
+
+            IMPORTANT: For reliable downstream parsing, return ONLY a JSON array containing
+            the competitor names (strings) and nothing else. The JSON array must contain
+            up to 3 company names (strings). Do NOT include any explanatory text, headings,
+            or other content outside the JSON array.
+
+            Examples (valid outputs):
+            ["Company A", "Company B", "Company C"]
+            ["Company A"]
+
             Company to analyze: {company_name}""",
-            expected_output="A list of the top 3 direct competitors with structured information about each.",
+            expected_output='A JSON array (e.g., ["Company A","Company B","Company C"]) containing up to 3 company names only.',
             agent=agent
         )
 
     def competitive_intelligence_task(self, agent, user_company, competitor_company):
-          # Produce a concise, executive-ready competitor analysis focused on recent moves, markets, hero products,
-          # financial snapshot, and explicit threats to the user's company. The output MUST be short, to-the-point,
-          # and formatted as Markdown headings so the UI can render sections clearly.
-          return Task(
+            # Produce a concise, executive-ready competitor analysis focused on recent moves, markets, hero products,
+            # financial snapshot, and explicit threats to the user's company. The output MUST be short, to-the-point,
+            # and formatted as Markdown headings so the UI can render sections clearly.
+            return Task(
                 description=f"""Produce a concise, executive-ready competitor analysis for {competitor_company} vs {user_company}.
 
-Output format (Markdown headings). Keep it extremely concise — executives only want the essentials.
+    STRICT OUTPUT RULES (MUST FOLLOW):
+    1. Output MUST start with a single line beginning with exactly: `TopLine:` (first non-empty line).
+    2. Use ONLY the following Markdown sections in this order. Do NOT add, remove, or rename headings:
+       - TopLine: One-line summary (1 sentence)
+       - ## Recent Moves (last 6 weeks)
+       - ## Major Markets
+       - ## Hero Products & Focus
+       - ## Financial Snapshot (key figures)
+       - ## Direct Threats to {user_company}
+    3. Do NOT include any preamble, planning text, chain-of-thought, process notes, or meta-commentary. Provide no explanations of method.
+    4. Keep content extremely concise: bullets only where requested; adhere to limits (Recent Moves up to 6 bullets; Major Markets 3-6 items; Hero Products up to 3 short lines; Financial Snapshot up to 5 short metric lines; Direct Threats up to 6 bullets).
+    5. If information unavailable, use exact phrases: `Not available` (for metrics) or `No recent public news (last 6 weeks)` (for Recent Moves).
+    6. Do not include source citations, URLs, or parenthetical provenance. Do not include JSON or wrappers — plain Markdown only.
+    7. Output nothing else. If you cannot produce the required sections, respond with exactly: `Information not available`.
 
-TopLine: One-line summary (1 sentence)
+    Notes for the agent:
+    1. Use the knowledge graph and stored analysis first, then perform online checks (news and filings) to update Recent Moves.
+    2. Restrict Recent Moves to the last ~6 weeks only.
+    3. When citing financials, prefer official filings (10-K/10-Q) or company releases; if exact figures are not found, use `Not available`.
 
-## Recent Moves (last 6 weeks)
-- List up to 6 bullet points describing newsworthy events or actions in the last ~6 weeks only. Prioritize: product launches, partnerships, acquisitions, funding, market entries, major hires.
-
-## Major Markets
-- List the primary markets / geographies / industry segments the competitor actively competes in (3-6 items).
-
-## Hero Products & Focus
-- List the 3 hero products or offerings the competitor is actively promoting; for each, 1 short phrase describing the focus (e.g., "AI analytics — enterprise")
-
-## Financial Snapshot (key figures)
-- Provide up to 5 concise metrics (Revenue, YoY growth, Margin, Cash/Debt, Recent quarter highlights). If exact figures unavailable, say: "Not available" for that metric.
-
-## Direct Threats to {user_company}
-- List up to 6 specific moves or capabilities that pose an immediate threat to {user_company} (each 1 short bullet). Be concrete.
-
-Notes for the agent:
-1. Use the knowledge graph and any stored analysis first, but ALWAYS perform online checks (news + filings) to fill gaps.
-2. For "Recent Moves" restrict to roughly the last 6 weeks — do not include older activity.
-3. When citing financials, consult official filings (10-K, 10-Q, earnings releases) if available; otherwise use public estimates.
-4. Do NOT include meta-commentary ("according to X"), process notes, or long explanations. Output must be declarative, present-tense statements.
-
-
-User's Company: {user_company}
-Competitor: {competitor_company}""",
-                expected_output="Markdown with the required headings and concise bullets.",
+    User's Company: {user_company}
+    Competitor: {competitor_company}""",
+                expected_output="Markdown with the exact required headings (TopLine then the listed H2s) and concise bullets.",
                 agent=agent
-          )
+            )
 
     def knowledge_graph_query_task(self, agent, query, graph_context):
         return Task(
